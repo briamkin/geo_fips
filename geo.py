@@ -1,6 +1,6 @@
 from __future__ import division
 from geo_boundaries import all_county_boundaries
-from county_geo import county_geo, county_geo_dictionary
+from county_geo import county_geo, county_geo_dictionary, county_fips
 from sklearn.externals import joblib
 
 def in_polygon(point, poly):
@@ -35,21 +35,24 @@ def find_nested(nested_list):
         nest = 0
     return nest
 
-def find_county(point):
+def find_county(point, full=0):
     """Given a long/lat point in the United States return a
     corresponding FIPS ID"""
 
     # load, run KD Tree, and return 5 nearest points
-    county_tree = joblib.load('county_tree.pkl')
+    county_tree = joblib.load('geo_tree/county_tree.pkl')
     dist, indices = county_tree.query(point, k=5)
     fips_list = []
     for index in indices[0]:
-        print county_geo[index][0],county_geo[index][1]
+        # print county_geo[index][0],county_geo[index][1]
         try:
             fips = county_geo_dictionary[(county_geo[index][0],county_geo[index][1])]
             fips_list.append(fips)
         except:
             pass
+
+    # set default values for return
+    fips = fips_list[0]
 
     # Find which path it exists in
     if len(fips_list) > 0:
@@ -57,12 +60,12 @@ def find_county(point):
             county_paths = all_county_boundaries[str(fips_num)]
             if find_nested(county_paths) == 0:
                 if in_polygon(point, county_paths):
-                    return fips_num
+                    fips = fips_num
                     break
             else:
                 for path in county_paths:
                     if in_polygon(point, path):
-                        return fips_num
+                        fips = fips_num
                         break
 
     # Point is most likely outside of US, return None
@@ -70,4 +73,10 @@ def find_county(point):
         return None
 
     # If point is near but not in county, return nearest county
-    return fips_list[0]
+    if full == 1:
+        try:
+            return [fips,county_fips[int(fips)][1],county_fips[int(fips)][0]]
+        except:
+            return None
+    else:
+        return fips
