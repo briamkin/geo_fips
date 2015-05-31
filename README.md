@@ -1,4 +1,4 @@
-# FIPS Code Getter
+# US County/FIPS From Single Longitude and Latitude Point
 ### How to use:
 ```from geo import find_county```<br>
 ```find_county([40.533548, -97.290977])```
