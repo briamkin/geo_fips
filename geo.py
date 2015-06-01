@@ -44,6 +44,7 @@ def find_county(point, full=0):
     dist, indices = county_tree.query(point, k=5)
     fips_list = []
     for index in indices[0]:
+
         # print county_geo[index][0],county_geo[index][1]
         try:
             fips = county_geo_dictionary[(county_geo[index][0],county_geo[index][1])]
